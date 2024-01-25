@@ -52,19 +52,36 @@ const guRemove = (t) => {
   });
   return t;
 };
+const numToKor = (t) => {
+  return t;
+};
+// 이달 내달
+const changeNextMonthKorVer = (t) => {
+  const this_month = Number(new Date().getMonth() + 1);
+  const next_month = this_month === 12 ? 1 : this_month + 1;
+  t = t.replaceAll(this_month + "월", "이달");
+  t = t.replaceAll(next_month + "월", "내달");
+  return t;
+};
 
+// 전체적으로 실행.
 const transform = (inputText) => {
   let result = "[충청신문=대전] 윤지현 기자 = " + inputText;
   result = replace(result);
   result = guRemove(result);
+  result = changeNextMonthKorVer(result);
+  result = numToKor(result);
   return result;
 };
 
 function App() {
   const [inputText, setInputText] = useState();
   const [result, setResult] = useState();
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     setInputText(e.target.value);
+  };
+  const handleResultChange = (e) => {
+    setResult(e.target.value);
   };
 
   const handleSubmit = () => {
@@ -86,7 +103,7 @@ function App() {
               rows={40}
               cols={70}
               placeholder="글 입력하기.."
-              onInput={handleChange}
+              onInput={handleInputChange}
               style={{ resize: "none" }}
             />
           </div>
@@ -95,6 +112,7 @@ function App() {
             cols={70}
             placeholder="여기 결과 나옴"
             value={result}
+            onInput={handleResultChange}
             style={{ resize: "none" }}
           />
         </div>
