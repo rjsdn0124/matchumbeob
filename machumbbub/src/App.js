@@ -53,6 +53,29 @@ const guRemove = (t) => {
   return t;
 };
 const numToKor = (t) => {
+  let ta = t.match(/\d{13,}/g);
+  ta.forEach((te) => {
+    let temp = Math.floor(Number(te) / 10 ** 12);
+    let ce = temp + "조" + te.substr(-12);
+    t = t.replaceAll(te, ce);
+  });
+
+  ta = t.match(/\d{9,}/g);
+  ta.forEach((te) => {
+    let temp = Math.floor(Number(te) / 10 ** 8);
+    let ce = (temp !== 0 ? temp + "억" : "") + te.substr(-8);
+    t = t.replaceAll(te, ce);
+  });
+
+  ta = t.match(/\d{5,}/g);
+  ta.forEach((te) => {
+    let temp = Math.floor(Number(te) / 10 ** 4);
+    let ce =
+      (temp !== 0 ? temp + "만" : "") +
+      (Number(te.substr(-4)) !== 0 ? Number(te.substr(-4)) : "");
+    t = t.replaceAll(te, ce);
+  });
+
   return t;
 };
 // 이달 내달
