@@ -5,12 +5,19 @@ import "./App.css";
 const replace = (t) => {
   t = t.replaceAll("하여", "해");
   t = t.replaceAll("하였다", "했다");
+  t = t.replaceAll("하였고", "했고");
   t = t.replaceAll("되어", "돼");
   t = t.replaceAll("되었다", "됐다");
+  t = t.replaceAll("되었고", "됐고");
   t = t.replaceAll("하였습니다", "했습니다");
   t = t.replaceAll("되었습니다", "됐습니다");
-  t = t.replaceAll("라고", "고");
+  t = t.replaceAll(/[^이]라고/g, "고");
   t = t.replaceAll("광역시", "시");
+  t = t.replaceAll("대전 예술의 전당", "대전예당");
+  t = t.replaceAll("대전 예술의전당", "대전예당");
+  t = t.replaceAll("대전예술의전당", "대전예당");
+  t = t.replaceAll("대덕구에따르면 ", "");
+  t = t.replaceAll("대덕구에 따르면 ", "");
   t = t.replaceAll("만 원", "만원");
   t = t.replaceAll("천 원", "천원");
   t = t.replaceAll("억 원", "억원");
@@ -18,17 +25,34 @@ const replace = (t) => {
   t = t.replaceAll("하였으며", "했으며");
   t = t.replaceAll("전했다", "밝혔다");
   t = t.replaceAll("라면서", "라며");
-  t = t.replaceAll("라고", "고");
-  t = t.replaceAll("구청장", "청장");
+  t = t.replaceAll("라며,", "라며");
+  t = t.replaceAll("/[^이]라며/g", "며");
+  t = t.replaceAll(" 구청장", " 청장");
   t = t.replaceAll("특히,", "특히");
   t = t.replaceAll("또,", "또");
   t = t.replaceAll("또한,", "또한");
   t = t.replaceAll("다음달", "내달");
+  t = t.replaceAll("다음 달", "내달");
   t = t.replaceAll("△", "▲");
   // 괄호 삭제
-  t = t.replace(/\([^)]*\)/g, "");
+  t = t.replaceAll(/\([^)]*\)/g, "");
+  // []를 ''로 변경
+  t = t.replaceAll(/[\[\]]/g, "'");
   // 숫자에 , 빼기
-  t = t.replace(/(?<=\d),(?=\d)/g, "");
+  t = t.replaceAll(/(?<=\d),(?=\d)/g, "");
+  return t;
+};
+
+// 시 이름 떼기
+const siRemove = (t) => {
+  const keywords = ["대전시"];
+  keywords.forEach((keyword) => {
+    const ta = t.indexOf(keyword);
+    if (ta >= 0) {
+      let tempt = t.substr(ta + keyword.length).replaceAll(keyword, "시");
+      t = t.substr(0, ta + keyword.length) + tempt;
+    }
+  });
   return t;
 };
 
@@ -52,6 +76,19 @@ const guRemove = (t) => {
   });
   return t;
 };
+
+// 사진 구 제공
+const appendProvPhotoGu = (t) => {
+  const keywords = ["서구", "유성구", "동구", "대덕구", "중구"];
+  keywords.forEach((keyword) => {
+    if (t.indexOf(keyword) >= 0) {
+      t += `\n(사진=${keyword} 제공)`;
+    }
+  });
+  return t;
+};
+
+// 숫자 한국어 자리수로
 const numToKor = (t) => {
   let ta = t.match(/\d{13,}/g);
   ta &&
@@ -81,23 +118,46 @@ const numToKor = (t) => {
 
   return t;
 };
+// x천을 x000으로
+const changeKorThousandToNum = (t) => {
+  const ta = t.match(/[0-9]천/g);
+  ta.forEach((ts) => (t = t.replaceAll(ts, `${ts[0]}000`)));
+  return t;
+};
+
 // 이달 내달
 const changeNextMonthKorVer = (t) => {
   const this_month = Number(new Date().getMonth() + 1);
   const next_month = this_month === 12 ? 1 : this_month + 1;
-  t = t.replaceAll(this_month + "월", "이달");
-  t = t.replaceAll(next_month + "월", "내달");
+  t = t.replaceAll(" " + this_month + "월", " 이달");
+  t = t.replaceAll(" " + next_month + "월", " 내달");
   return t;
 };
 
+// 지난해 올해
+const changeNextYearKorVer = (t) => {
+  const this_year = Number(new Date().getFullYear());
+  const next_year = this_year === 12 ? 1 : this_year + 1;
+  t = t.replaceAll(this_year + "년", "올해");
+  t = t.replaceAll(this_year + "년도", "올해");
+  t = t.replaceAll(this_year, "올해");
+  t = t.replaceAll(next_year + "년", "지난해");
+  t = t.replaceAll(next_year + "년도", "지난해");
+  t = t.replaceAll(next_year, "지난해");
+  return t;
+};
 // 전체적으로 실행.
 const transform = (inputText) => {
-  let result = "[충청신문=대전] 윤지현 기자 = " + inputText;
-  result = replace(result);
+  const gu_arr = [];
+  let result = replace(inputText);
   result = guRemove(result);
+  result = siRemove(result);
   result = changeNextMonthKorVer(result);
+  result = changeNextYearKorVer(result);
   result = numToKor(result);
-  return result;
+  result = appendProvPhotoGu(result);
+  result = changeKorThousandToNum(result);
+  return "[충청신문=대전] 윤지현 기자 = " + result;
 };
 
 function App() {
