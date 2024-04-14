@@ -3,6 +3,10 @@ import "./App.css";
 
 // 단어 변경하고 괄호 삭제까지
 const replace = (t) => {
+  t = t.replaceAll("라면서", "라며");
+  t = t.replaceAll("라며,", "라며");
+  t = t.replaceAll(/[^이]라며/g, (r) => r.replace("라며", "며"));
+  t = t.replaceAll(/[^이]라고/g, (r) => r.replace("라고", "고"));
   t = t.replaceAll("하여", "해");
   t = t.replaceAll("하였다", "했다");
   t = t.replaceAll("하였고", "했고");
@@ -11,7 +15,6 @@ const replace = (t) => {
   t = t.replaceAll("되었고", "됐고");
   t = t.replaceAll("하였습니다", "했습니다");
   t = t.replaceAll("되었습니다", "됐습니다");
-  t = t.replaceAll(/[^이]라고/g, "고");
   t = t.replaceAll("광역시", "시");
   t = t.replaceAll("대전 예술의 전당", "대전예당");
   t = t.replaceAll("대전 예술의전당", "대전예당");
@@ -24,9 +27,6 @@ const replace = (t) => {
   t = t.replaceAll("되었으며", "됐으며");
   t = t.replaceAll("하였으며", "했으며");
   t = t.replaceAll("전했다", "밝혔다");
-  t = t.replaceAll("라면서", "라며");
-  t = t.replaceAll("라며,", "라며");
-  t = t.replaceAll("/[^이]라며/g", "며");
   t = t.replaceAll(" 구청장", " 청장");
   t = t.replaceAll("특히,", "특히");
   t = t.replaceAll("또,", "또");
@@ -68,9 +68,10 @@ const guRemove = (t) => {
   keywords.forEach((keyword) => {
     const tk = keyword.split(" ")[1];
     const ta = t.indexOf(keyword);
+    console.log(tk, ta);
     if (ta >= 0) {
       let tempt = t.substr(ta + keyword.length).replaceAll(keyword, tk);
-      tempt = tempt.replaceAll(tk + " ", "구 ");
+      tempt = tempt.replaceAll(tk, "구");
       t = t.substr(0, ta + keyword.length) + tempt;
     }
   });
@@ -121,7 +122,7 @@ const numToKor = (t) => {
 // x천을 x000으로
 const changeKorThousandToNum = (t) => {
   const ta = t.match(/[0-9]천/g);
-  ta.forEach((ts) => (t = t.replaceAll(ts, `${ts[0]}000`)));
+  ta && ta.forEach((ts) => (t = t.replaceAll(ts, `${ts[0]}000`)));
   return t;
 };
 
@@ -148,9 +149,8 @@ const changeNextYearKorVer = (t) => {
 };
 // 전체적으로 실행.
 const transform = (inputText) => {
-  const gu_arr = [];
-  let result = replace(inputText);
-  result = guRemove(result);
+  let result = guRemove(inputText);
+  result = replace(result);
   result = siRemove(result);
   result = changeNextMonthKorVer(result);
   result = changeNextYearKorVer(result);
