@@ -33,11 +33,15 @@ const replace = (t) => {
   t = t.replaceAll("또한,", "또한");
   t = t.replaceAll("다음달", "내달");
   t = t.replaceAll("다음 달", "내달");
+  t = t.replaceAll("올해 이달", "이달");
+  t = t.replaceAll("올해 내달", "내달");
+  t = t.replaceAll("올해 올해", "올해");
+  t = t.replaceAll("지난 지난해", "지난해");
   t = t.replaceAll("△", "▲");
   // 괄호 삭제
   t = t.replaceAll(/\([^)]*\)/g, "");
   // []를 ''로 변경
-  t = t.replaceAll(/[\[\]]/g, "'");
+  t = t.replaceAll(/[\[\]‘’]/g, "'");
   // 숫자에 , 빼기
   t = t.replaceAll(/(?<=\d),(?=\d)/g, "");
   return t;
@@ -68,7 +72,6 @@ const guRemove = (t) => {
   keywords.forEach((keyword) => {
     const tk = keyword.split(" ")[1];
     const ta = t.indexOf(keyword);
-    console.log(tk, ta);
     if (ta >= 0) {
       let tempt = t.substr(ta + keyword.length).replaceAll(keyword, tk);
       tempt = tempt.replaceAll(tk, "구");
@@ -138,22 +141,33 @@ const changeNextMonthKorVer = (t) => {
 // 지난해 올해
 const changeNextYearKorVer = (t) => {
   const this_year = Number(new Date().getFullYear());
-  const next_year = this_year === 12 ? 1 : this_year + 1;
+  const last_year = this_year - 1;
   t = t.replaceAll(this_year + "년", "올해");
   t = t.replaceAll(this_year + "년도", "올해");
   t = t.replaceAll(this_year, "올해");
-  t = t.replaceAll(next_year + "년", "지난해");
-  t = t.replaceAll(next_year + "년도", "지난해");
-  t = t.replaceAll(next_year, "지난해");
+  t = t.replaceAll(/\'.*올해.*\'/g, (s) =>
+    s.replaceAll("올해", `${this_year}`)
+  );
+  t = t.replaceAll(/‘.*올해.*’/g, (s) => s.replaceAll("올해", `${this_year}`));
+  t = t.replaceAll(last_year + "년", "지난해");
+  t = t.replaceAll(last_year + "년도", "지난해");
+  t = t.replaceAll(last_year, "지난해");
+  t = t.replaceAll(/\'.*지난해.*\'/g, (s) =>
+    s.replaceAll("지난해", `${last_year}`)
+  );
+  t = t.replaceAll(/‘.*지난해.*’/g, (s) =>
+    s.replaceAll("지난해", `${last_year}`)
+  );
   return t;
 };
 // 전체적으로 실행.
 const transform = (inputText) => {
   let result = guRemove(inputText);
-  result = replace(result);
-  result = siRemove(result);
   result = changeNextMonthKorVer(result);
   result = changeNextYearKorVer(result);
+  console.log(result.match("올해 이달"));
+  result = replace(result);
+  result = siRemove(result);
   result = numToKor(result);
   result = appendProvPhotoGu(result);
   result = changeKorThousandToNum(result);
