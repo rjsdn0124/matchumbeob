@@ -1,8 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 
-// 단어 변경하고 괄호 삭제까지
-const replace = (t) => {
+const firstReplace = (t) => {
   t = t.replaceAll("라면서", "라며");
   t = t.replaceAll("라며,", "라며");
   t = t.replaceAll(/[^이]라며/g, (r) => r.replace("라며", "며"));
@@ -16,20 +15,24 @@ const replace = (t) => {
   t = t.replaceAll("하였습니다", "했습니다");
   t = t.replaceAll("되었습니다", "됐습니다");
   t = t.replaceAll("광역시", "시");
-  t = t.replaceAll("대전 예술의 전당", "대전예당");
-  t = t.replaceAll("대전 예술의전당", "대전예당");
-  t = t.replaceAll("대전예술의전당", "대전예당");
   t = t.replaceAll("대덕구에따르면 ", "");
   t = t.replaceAll("대덕구에 따르면 ", "");
-  t = t.replaceAll("만 원", "만원");
-  t = t.replaceAll("천 원", "천원");
-  t = t.replaceAll("억 원", "억원");
   t = t.replaceAll("되었으며", "됐으며");
   t = t.replaceAll("하였으며", "했으며");
   t = t.replaceAll("전했다", "밝혔다");
   t = t.replaceAll(" 구청장", " 청장");
   t = t.replaceAll("특히,", "특히");
   t = t.replaceAll("또,", "또");
+  t = t.replaceAll("대전 예술의 전당", "대전예당");
+  t = t.replaceAll("대전 예술의전당", "대전예당");
+  t = t.replaceAll("대전예술의전당", "대전예당");
+  return t;
+};
+// 단어 변경하고 괄호 삭제까지
+const lastReplace = (t) => {
+  t = t.replaceAll("만 원", "만원");
+  t = t.replaceAll("천 원", "천원");
+  t = t.replaceAll("억 원", "억원");
   t = t.replaceAll("또한,", "또한");
   t = t.replaceAll("다음달", "내달");
   t = t.replaceAll("다음 달", "내달");
@@ -40,10 +43,12 @@ const replace = (t) => {
   t = t.replaceAll("△", "▲");
   // 괄호 삭제
   t = t.replaceAll(/\([^)]*\)/g, "");
-  // []를 ''로 변경
-  t = t.replaceAll(/[\[\]‘’]/g, "'");
+  // [],<>,``를 ''로 변경
+  t = t.replaceAll(/[\[\]‘’<>]/g, "'");
   // 숫자에 , 빼기
   t = t.replaceAll(/(?<=\d),(?=\d)/g, "");
+  // 공백 2개 이상 삭제.
+  t = t.replaceAll(/[\ ]{2,}/g, " ");
   return t;
 };
 
@@ -162,15 +167,16 @@ const changeNextYearKorVer = (t) => {
 };
 // 전체적으로 실행.
 const transform = (inputText) => {
-  let result = guRemove(inputText);
+  let result = firstReplace(inputText);
+  result = guRemove(result);
   result = changeNextMonthKorVer(result);
   result = changeNextYearKorVer(result);
-  console.log(result.match("올해 이달"));
-  result = replace(result);
+  result = lastReplace(result);
   result = siRemove(result);
   result = numToKor(result);
   result = appendProvPhotoGu(result);
   result = changeKorThousandToNum(result);
+  result = result.trim();
   return "[충청신문=대전] 윤지현 기자 = " + result;
 };
 
